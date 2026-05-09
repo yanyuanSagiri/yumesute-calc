@@ -182,27 +182,10 @@ export default class ScoreCalculator {
       })
     })
 
-    // accessory
-    this.accessories.forEach((accessory, idx) => {
-      if (!accessory) return
-      for (let effect of accessory.mainEffects) {
-        effect = effect.effect
-        if (effect.FireTimingType !== 'Passive' && effect.FireTimingType !== 'StartLive') continue
-        if (!effect.canTrigger(this, idx)) continue
-        effect.applyEffect(this, idx, StatBonusType.Accessory)
-      }
-      if (accessory.randomEffect) {
-        let effect = accessory.randomEffect.effect
-        if (effect.canTrigger(this, idx) && (effect.FireTimingType === 'Passive' || effect.FireTimingType === 'StartLive')) {
-          effect.applyEffect(this, idx, StatBonusType.Accessory)
-        }
-      }
-    })
-
-    // poster
-    this.posters.forEach((poster, idx) => {
-      if (!poster) return
-      poster.abilities.forEach(ability => {
+    // poster => accessory
+    this.members.forEach((_chara, idx) => {
+      const poster = this.posters[idx]
+      poster?.abilities.forEach(ability => {
         if (!ability.unlocked) return
         if (ability.data.Type === 'Leader' && this.members[idx] !== leader) return
         const abilityEffectBranch = ability.getActiveBranch(this.liveSim)
@@ -214,6 +197,20 @@ export default class ScoreCalculator {
           effect.applyEffect(this, idx, StatBonusType.Poster)
         })
       })
+
+      const accessory = this.accessories[idx]
+      for (let effect of (accessory?.mainEffects ?? [])) {
+        effect = effect.effect
+        if (effect.FireTimingType !== 'Passive' && effect.FireTimingType !== 'StartLive') continue
+        if (!effect.canTrigger(this, idx)) continue
+        effect.applyEffect(this, idx, StatBonusType.Accessory)
+      }
+      if (accessory?.randomEffect) {
+        let effect = accessory.randomEffect.effect
+        if (effect.canTrigger(this, idx) && (effect.FireTimingType === 'Passive' || effect.FireTimingType === 'StartLive')) {
+          effect.applyEffect(this, idx, StatBonusType.Accessory)
+        }
+      }
     })
 
     // theater effect
